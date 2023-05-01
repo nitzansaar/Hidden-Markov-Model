@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+from Approach import approach
 from HMM import HMM
 
 
@@ -24,3 +25,6 @@ class TestHMM(TestCase):
         print(f"Observation: {' '.join(observation.outputseq)}")
         print(f"True states: {' '.join(observation.stateseq)}")
         print(f"Most likely states: {' '.join(most_likely_states)}")
+
+    def test_approach(self):
+        approach(10)

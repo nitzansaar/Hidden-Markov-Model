@@ -14,17 +14,56 @@ from random import random
 # Note:
 # We can reduce this to the problem of player 1 choosing the best value at which to hold.
 # This is called a policy; once we know the best number to hold at, we can act optimally.
+def approach(n):
+    q_table = [[random() / 100.0, random() / 100.0] for i in range(n + 1)]
+    q_table[n][0] = 1
+    q_table[n][1] = 0
+    epsilon = 0.1
+    alpha = 0.1
+    gamma = 1
+
+    for i in range(1000000):
+        state = randint(0, n - 1)
+        while True:
+            best_action = q_table[state].index(max(q_table[state]))
+            action = best_action if random() > epsilon else 1 - best_action
+
+            reward, next_state = play_game(state, action, n)
+
+            if next_state is not None:
+                q_table[state][action] = q_table[state][action] + alpha * (
+                            reward + gamma * max(q_table[next_state]) - q_table[state][action])
+                state = next_state
+            else:
+                q_table[state][action] = q_table[state][action] + alpha * (reward - q_table[state][action])
+                break
+
+    for state in range(n + 1):
+        optimal_action = "hold" if q_table[state].index(max(q_table[state])) == 0 else "roll"
+        print(f"sum: {state}: hold {q_table[state][0]:.6f} roll {q_table[state][1]:.6f} [{optimal_action}]")
 
 
-def approach(n) :
-    q_table = [[random() / 100.0, random() / 100.0] for i in range(n)]
+def play_game(state, action, n):
+    if action == 0:  # hold
+        opponent_state = 0
+        while opponent_state < state and opponent_state <= n:
+            roll = randint(1, 6)
+            if opponent_state + roll <= n:
+                opponent_state += roll
+            else:
+                break
+        reward = 1 if opponent_state > n or opponent_state < state else 0
+        next_state = None
+    else:  # roll
+        roll = randint(1, 6)
+        if state + roll > n:
+            reward = 0
+            next_state = None
+        else:
+            reward = 0
+            next_state = state + roll
+            if next_state == n:
+                reward = 1
+                next_state = None
 
-    for i in range(100000) :
-        # Select an initial state.
-        # Take the best move with p=epsilon, and the worst move with p=1-epsilon.
-        # Continue playing until the game is done.
-        # If you win, reward = 1.
-        # If you lose, reward = 0.
-        ## Use Q-learning to update the q-table for each state-action pair visited.
-
-    ## After 100000 iterations, print out your q-table.
+    return reward, next_state
